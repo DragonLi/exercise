@@ -1,0 +1,5 @@
+data Exp = var String | val Int | plus Exp Exp
+
+env = List (String , Int)
+
+data Eval a = MkEval (env -> Maybe a)
