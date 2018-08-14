@@ -1,2 +1,12 @@
 *.ibc
 *.o
+
+FSharp/Viterbi/\.idea/
+
+FSharp/Viterbi/\.vs/
+
+FSharp/Viterbi/obj/
+
+FSharp/Viterbi/packages/
+
+\.DS_Store
