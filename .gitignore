@@ -12,3 +12,9 @@ FSharp/Viterbi/packages/
 \.DS_Store
 
 FSharp/Viterbi/bin/
+
+CSharp/Viterbi/\.idea/
+
+CSharp/Viterbi/bin/
+
+CSharp/Viterbi/obj/
