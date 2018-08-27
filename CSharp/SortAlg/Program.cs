@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace QuickSort
 {
@@ -38,7 +39,8 @@ namespace QuickSort
         {
             var copy = new List<int>(cases);
             copy.Sort();
-            Qsort(cases);
+            //Qsort(cases);
+            HeapSort(cases);
             var passed = true;
             for (int i = 0; i < copy.Count; i++)
             {
@@ -109,9 +111,10 @@ namespace QuickSort
                     // arr[low] > pivot and pivot > arr[high]
                     // low != high because if low == high then arr[low] == arr[high] > < pivot which is not possible
                     // switch arr[low] and arr[high]
-                    var tmp = arr[low];
+                    /*var tmp = arr[low];
                     arr[low] = arr[high];
-                    arr[high] = tmp;
+                    arr[high] = tmp;*/
+                    Swap(ref arr[low],ref arr[high]);
                     // prepare to compare next
                     high--;
                     low++;
@@ -159,9 +162,10 @@ namespace QuickSort
                     // arr[low] > pivot and pivot > arr[high]
                     // low != high because if low == high then arr[low] == arr[high] > < pivot which is not possible
                     // switch arr[low] and arr[high]
-                    var tmp = arr[low];
+                    /*var tmp = arr[low];
                     arr[low] = arr[high];
-                    arr[high] = tmp;
+                    arr[high] = tmp;*/
+                    Swap(ref arr[low],ref arr[high]);
                     // prepare to compare next
                     high--;
                     low++;
@@ -223,13 +227,113 @@ namespace QuickSort
                 }
                 else
                 {
-                    var tmp = arr[low];
+                    /*var tmp = arr[low];
                     arr[low] = arr[high];
-                    arr[high] = tmp;
+                    arr[high] = tmp;*/
+                    Swap(ref arr[low],ref arr[high]);
                     return ScanArray(arr, pivot, low+1, high-1, false);
                 }
             }
             return low;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Swap(ref int x, ref int y)
+        {
+            var tmp = x;
+            x = y;
+            y = tmp;
+        }
+
+        static void HeapSort(int[] arr)
+        {
+            var end = arr.Length - 1;
+            BuildHeap(arr, end);
+            
+            //loop invariant: arr[0,end] is heap arrary,(end,arr.Length -1] is sorted
+            while (end > 0)
+            {
+                Swap(ref arr[0],ref arr[end]);
+                end--;
+                SiftDown(arr, 0, end);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int ParentBinHeap(int ind)
+        {
+            return (ind - 1) / 2;//shift right
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int LeftChildBinHeap(int ind)
+        {
+            return 2 * ind + 1;//shift left then add 1
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int RightChildBinHeap(int ind)
+        {
+            return 2 * (ind + 1);//add 1 then shift left
+        }
+        
+        /// <summary>
+        /// O(n), where n = last+1
+        /// </summary>
+        /// <param name="arr"></param>
+        /// <param name="last"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void BuildHeap(int[] arr,int last)
+        {
+            var start = ParentBinHeap(last);
+            //loop count is floor((last -1) / 2) +1
+            //every loop execution is log (last - start +1)
+            //
+            while (start >= 0)
+            {
+                SiftDown(arr, start, last);
+                start--;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int LeafSearch(int[] arr, int start, int end)
+        {
+            var j = start;
+            while (RightChildBinHeap(j) <= end)
+            {
+                if (arr[RightChildBinHeap(j)] > arr[LeftChildBinHeap(j)])
+                    j = RightChildBinHeap(j);
+                else
+                    j = LeftChildBinHeap(j);
+            }
+
+            if (LeftChildBinHeap(j) <= end)
+                j = LeftChildBinHeap(j);
+            
+            return j;
+        }
+        
+        /// <summary>
+        /// O(log n), where n = end - start + 1
+        /// </summary>
+        /// <param name="arr"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        static void SiftDown(int[] arr, int start, int end)
+        {
+            var j = LeafSearch(arr, start, end);
+            while (arr[start] > arr[j])
+                j = ParentBinHeap(j);
+
+            var x = arr[j];
+            arr[j] = arr[start];
+            
+            while (j > start)
+            {
+                j = ParentBinHeap(j);
+                Swap(ref arr[j],ref x);
+            }
         }
     }
     
