@@ -300,16 +300,17 @@ namespace QuickSort
         static int LeafSearch(int[] arr, int start, int end)
         {
             var j = start;
-            while (RightChildBinHeap(j) <= end)
+            var rInd = RightChildBinHeap(j);
+            var lInd = LeftChildBinHeap(j);
+            while (rInd <= end)
             {
-                if (arr[RightChildBinHeap(j)] > arr[LeftChildBinHeap(j)])
-                    j = RightChildBinHeap(j);
-                else
-                    j = LeftChildBinHeap(j);
+                j = arr[rInd] > arr[lInd] ? rInd : lInd;
+                rInd = RightChildBinHeap(j);
+                lInd = LeftChildBinHeap(j);
             }
 
-            if (LeftChildBinHeap(j) <= end)
-                j = LeftChildBinHeap(j);
+            if (lInd <= end)
+                j = lInd;
             
             return j;
         }
@@ -323,11 +324,12 @@ namespace QuickSort
         static void SiftDown(int[] arr, int start, int end)
         {
             var j = LeafSearch(arr, start, end);
-            while (arr[start] > arr[j])
+            var root = arr[start];
+            while (root > arr[j])
                 j = ParentBinHeap(j);
 
             var x = arr[j];
-            arr[j] = arr[start];
+            arr[j] = root;
             
             while (j > start)
             {
