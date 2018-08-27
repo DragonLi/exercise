@@ -94,41 +94,91 @@ namespace Viterbi
     /// <typeparam name="TObservation"></typeparam>
     public class FiniteHMM<THState,  TObservation> : HMM<THState, TObservation>
     {
+        public IEnumerable<THState> Viterbi(IEnumerable<int> obsSeq
+            , ProbT[][] emit, Wrapper<ProbT> maxProb)
+        {
+            var stateArr = _stateArr;
+            var stateArrLength = stateArr.Length;
+            ProbT[] viterbiArr = null,tmpArr = null;
+            foreach (var currentObs in obsSeq)
+            {
+                var maxHiddenState = default(THState);
+                var maxHiddenVal = ProbT.MinValue;
+                if (viterbiArr == null)
+                {
+                    viterbiArr=new ProbT[stateArrLength];
+                    //possible vector parrell
+                    for (var i = 0; i < stateArrLength; i++)
+                    {
+                        var hState = stateArr[i];
+                        viterbiArr[i] = _initProb[i] * emit[i][currentObs];
+                        if (maxHiddenVal < viterbiArr[i])
+                        {
+                            maxHiddenVal = viterbiArr[i];
+                            maxHiddenState = hState;
+                        }
+                    }
+                }
+                else
+                {
+                    if (tmpArr == null)
+                        tmpArr = new ProbT[stateArrLength];
+                    //possible vector parrell
+                    for (var i = 0; i < stateArrLength; i++)
+                    {
+                        var hState = stateArr[i];
+                        //possible matrix parrell: max viterbiArr[j]*Trans(j,i)
+                        var maxV = ProbT.MinValue;
+                        for (var j = 0; j < stateArrLength; j++)
+                        {
+                            var tmp = viterbiArr[j] *_trans[j][i];
+                            if (tmp > maxV)
+                                maxV = tmp;
+                        }
+                        tmpArr[i] = maxV * emit[i][currentObs];
+                        if (maxHiddenVal < tmpArr[i])
+                        {
+                            maxHiddenVal = tmpArr[i];
+                            maxHiddenState = hState;
+                        }
+                    }
+                    Array.Copy(tmpArr, viterbiArr, stateArrLength);
+                    Array.Clear(tmpArr,0,stateArrLength);
+                }
+                if (maxProb!=null)
+                    maxProb.Value = maxHiddenVal;
+                yield return maxHiddenState;
+            }
+        }
+        
         public IEnumerable<THState> Viterbi(IEnumerable<TObservation> obsSeq, Wrapper<ProbT> maxProb)
         {
             var stateArr = _stateArr;
             var stateArrLength = stateArr.Length;
-            var viterbiArr=new ProbT[stateArrLength];
-            using (var em = obsSeq.GetEnumerator())
+            ProbT[] viterbiArr = null,tmpArr = null;
+            foreach (var currentObs in obsSeq)
             {
-                if (!em.MoveNext())
-                    throw new Exception();
-                var currentObs = em.Current;
-                    
                 var maxHiddenState = default(THState);
                 var maxHiddenVal = ProbT.MinValue;
-                //possible vector parrell
-                for (var i = 0; i < stateArrLength; i++)
+                if (viterbiArr == null)
                 {
-                    var hState = stateArr[i];
-                    viterbiArr[i] = _initProb[i] * _emit(hState, currentObs);
-                    if (maxHiddenVal < viterbiArr[i])
+                    viterbiArr=new ProbT[stateArrLength];
+                    //possible vector parrell
+                    for (var i = 0; i < stateArrLength; i++)
                     {
-                        maxHiddenVal = viterbiArr[i];
-                        maxHiddenState = hState;
+                        var hState = stateArr[i];
+                        viterbiArr[i] = _initProb[i] * _emit(hState, currentObs);
+                        if (maxHiddenVal < viterbiArr[i])
+                        {
+                            maxHiddenVal = viterbiArr[i];
+                            maxHiddenState = hState;
+                        }
                     }
                 }
-
-                if (maxProb!=null)
-                    maxProb.Value = maxHiddenVal;
-                yield return maxHiddenState;
-
-                var tmpArr = new ProbT[stateArrLength];
-                while (em.MoveNext())
+                else
                 {
-                    currentObs = em.Current;
-                    maxHiddenState = default(THState);
-                    maxHiddenVal = ProbT.MinValue;
+                    if (tmpArr == null)
+                        tmpArr = new ProbT[stateArrLength];
                     //possible vector parrell
                     for (var i = 0; i < stateArrLength; i++)
                     {
@@ -149,10 +199,11 @@ namespace Viterbi
                         }
                     }
                     Array.Copy(tmpArr, viterbiArr, stateArrLength);
-                    if (maxProb!=null)
-                        maxProb.Value = maxHiddenVal;
-                    yield return maxHiddenState;
+                    Array.Clear(tmpArr,0,stateArrLength);
                 }
+                if (maxProb!=null)
+                    maxProb.Value = maxHiddenVal;
+                yield return maxHiddenState;
             }
         }
 

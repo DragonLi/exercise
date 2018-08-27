@@ -99,6 +99,21 @@ namespace Viterbi
             }
             Console.Write(outMaxProb.Value+"");
             Console.WriteLine();
+            
+            outMaxProb.Value = 0;
+            var emitArr = new[] {new[] {0.5,0.4,0.1}, new[] {0.1,0.3,0.6}};
+            result = hmm.Viterbi(new []
+            {
+                (int) wikiObservations.Normal, 
+                (int) wikiObservations.Cold,
+                (int) wikiObservations.Dizzy, 
+            },emitArr, outMaxProb);
+            foreach (var hiddense in result)
+            {
+                Console.Write(hiddense+", ");
+            }
+            Console.Write(outMaxProb.Value+"");
+            Console.WriteLine();
         }
     }
 }
