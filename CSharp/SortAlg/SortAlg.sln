@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickSort", "QuickSort.csproj", "{E0B0F9EC-368D-4372-B08F-483C1406B91C}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "HeapStruct", "HeapStruct\HeapStruct.fsproj", "{9281354E-4AAC-4DA3-B7C1-F3EED06737D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +15,9 @@ Global
 		{E0B0F9EC-368D-4372-B08F-483C1406B91C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0B0F9EC-368D-4372-B08F-483C1406B91C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0B0F9EC-368D-4372-B08F-483C1406B91C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9281354E-4AAC-4DA3-B7C1-F3EED06737D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9281354E-4AAC-4DA3-B7C1-F3EED06737D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9281354E-4AAC-4DA3-B7C1-F3EED06737D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9281354E-4AAC-4DA3-B7C1-F3EED06737D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

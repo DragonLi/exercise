@@ -26,3 +26,7 @@ CSharp/SortAlg/\.vs/
 CSharp/SortAlg/bin/
 
 CSharp/SortAlg/obj/
+
+CSharp/SortAlg/HeapStruct/obj/
+
+CSharp/SortAlg/packages/
