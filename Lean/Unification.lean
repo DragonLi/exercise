@@ -1,7 +1,7 @@
 namespace Unification
 
 inductive Fin : nat -> Type
-| f0 : Fin (nat.succ nat.zero)
+| f0 {n:nat}: Fin (nat.succ n)
 | fs {n: nat} : Fin n -> Fin (nat.succ n)
 /-
 #check @Fin.rec
@@ -64,6 +64,19 @@ def subCompose {m n l:nat}(f:Fin m -> Term n)(g:Fin l -> Term m) : Fin l -> Term
 notation f `◇` g := subCompose f g
 
 --#print subCompose
+def subIotaId' {m:nat}:Π (t: Term m), ι ◃ t = t
+| Term.leaf := by unfold liftFin
+| (Term.var n) := by unfold liftFin
+| (Term.fork s t) :=
+    let hs := subIotaId' s in
+    let ht := subIotaId' t in
+    begin
+        unfold liftFin,
+        calc
+            Term.fork (ι◃ s) (ι◃ t) = Term.fork s (ι◃ t) : by rw hs
+            ... = Term.fork s t : by rw ht
+    end
+--#print subIotaId'._main._pack
 
 def subIotaId {m:nat}(t: Term m): ι ◃ t = t  :=
 match t with
@@ -98,13 +111,20 @@ def flatSubCompose {m n l:nat}(f:Fin n -> Term l)(r: Fin m -> Fin n)(v:Fin m):
 (f ◇ (▹ r)) v = f (r v) :=
 by simp[liftFin,injectFin,subCompose]
 
-def thin {n:nat}(x:Fin (n+1))(y:Fin n) : Fin (n+1):=sorry
-/-
-match x,y with
-| Fin.f0, y := Fin.fs y
-end
--/
---#print flatSubCompose
+def thin : Π{n:nat} (x:Fin (n+1))(y:Fin n), Fin (n+1)
+| n Fin.f0 y := Fin.fs y
+| (n+1) (Fin.fs x) Fin.f0 := Fin.f0
+| (n+1) (Fin.fs x) (Fin.fs y) := Fin.fs (thin x y)
+--#print thin._main
+
+lemma thin_inj {n:nat}(x:Fin (n+1))(y z:Fin n): thin x y = thin x z -> y = z
+:= sorry
+
+lemma thin_rej {n:nat}(x:Fin (n+1))(y:Fin n):thin x y ≠ x
+:= sorry
+
+lemma thin_exist {n:nat}(x y:Fin (n+1)) : x ≠ y -> (∃ y', thin x y' = y)
+:= sorry
 
 #print notation ◃ ▹ ◇
 end Unification
