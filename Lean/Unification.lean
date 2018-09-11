@@ -3,7 +3,7 @@ namespace Unification
 inductive Fin : nat -> Type
 | f0 : Fin (nat.succ nat.zero)
 | fs {n: nat} : Fin n -> Fin (nat.succ n)
-
+/-
 #check @Fin.rec
 --#print Fin.rec
 #check @Fin.rec_on
@@ -25,7 +25,7 @@ inductive Fin : nat -> Type
 #check @Fin.fs.sizeof_spec
 --#check @well_founded.fix_F
 --#check @well_founded.fix_F_eq
-
+-/
 inductive Term : nat -> Type
 | leaf {n:nat} : Term n
 | var {n:nat} : Fin n -> Term n /-iota-/
@@ -42,7 +42,7 @@ def injectFin {m n:nat}: (Fin m -> Fin n) -> Fin m -> Term n :=
 
 notation ▹ f := injectFin f
 
-#print injectFin
+--#print injectFin
 
 def liftFin {m n:nat}(f: Fin m -> Term n) : Term m -> Term n
 | Term.leaf := @Term.leaf n
@@ -56,33 +56,55 @@ postfix  `◃`:std.prec.max  := liftFin
 def subEq {m n:nat}(f g:Fin m -> Term n) :=
 Π (x:Fin m),(f x = g x)
 
-#print subEq
+--#print subEq
 
 def subCompose {m n l:nat}(f:Fin m -> Term n)(g:Fin l -> Term m) : Fin l -> Term n :=
 λ k, (f ◃) (g k)
 
 notation f `◇` g := subCompose f g
 
-#print subCompose
+--#print subCompose
 
-def subIotaId {m:nat} : Π(t: Term m), ι ◃ t = t
-:= sorry
-/-
-| Term.leaf := refl
-| (Term.var n) := refl
-| (Term.fork s t) := refl
--/
-#check @subIotaId
+def subIotaId {m:nat}(t: Term m): ι ◃ t = t  :=
+match t with
+| Term.leaf := by simp[liftFin]
+| (Term.var n) := by simp[liftFin]
+| (Term.fork s t) := 
+    begin
+     simp[liftFin],
+     split,
+     show ι◃ s = s,from (_match s),
+     show ι◃ t = t,from (_match t)
+    end
+end
+
+--#print subIotaId._match_1._pack
 
 def subComposeLiftFlat {m n l:nat}(t:Term l)(f:Fin m -> Term n)(g:Fin l -> Term m):
-(f ◇ g) ◃ t = f ◃ (g ◃ t)
-:= sorry
-#check @subComposeLiftFlat
+(f ◇ g) ◃ t = f ◃ (g ◃ t) :=
+match t with
+| Term.leaf := by simp[liftFin]
+| (Term.var n) := by simp[liftFin,subCompose]
+| (Term.fork s t) := 
+    begin
+        simp[liftFin],split;
+        apply _match
+    end
+end
 
-def flatSubCompose {m n l:nat}(f:Fin n -> Term l)(r: Fin m -> Fin n):
-(f ◇ (▹ r)) = λ k, f (r k)
-:= sorry
-#check @flatSubCompose
+--#print subComposeLiftFlat._match_1._pack
 
-#print notation ⁻¹ ◃ ▹ ◇
+def flatSubCompose {m n l:nat}(f:Fin n -> Term l)(r: Fin m -> Fin n)(v:Fin m):
+(f ◇ (▹ r)) v = f (r v) :=
+by simp[liftFin,injectFin,subCompose]
+
+def thin {n:nat}(x:Fin (n+1))(y:Fin n) : Fin (n+1):=sorry
+/-
+match x,y with
+| Fin.f0, y := Fin.fs y
+end
+-/
+--#print flatSubCompose
+
+#print notation ◃ ▹ ◇
 end Unification
