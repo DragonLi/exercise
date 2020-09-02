@@ -8,11 +8,37 @@ namespace HanoiTower
     {
         static void Main(string[] args)
         {
-            var num = 4;
             var start = 1;
             var end = 2;
-            PrintList(HanoiRec(num, start, end));
-            PrintList(HanoiIter(num, start, end));
+            for (var num = 0; num < 25; num++)
+            {
+                var baseLine = HanoiRec(num, start, end, new List<(int, int)>());
+                Console.WriteLine($"finished: {num}-Rec");
+                var test = HanoiIter(num, start, end);
+                Console.WriteLine($"finished: {num}-Iter");
+                if (!IsSameList(baseLine, test))
+                {
+                    Console.WriteLine($"bug at Num: {num}");
+                    PrintList(baseLine);
+                    PrintList(test);
+                }
+            }
+        }
+
+        static bool IsSameList(IReadOnlyList<(int,int)> a, IReadOnlyList<(int,int)> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+            
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         static void PrintList<T>(IEnumerable<T> lst)
@@ -25,15 +51,20 @@ namespace HanoiTower
             Console.WriteLine(b);
         }
 
-        static List<(int, int)> HanoiRec(int num, int start, int end)
+        static List<(int, int)> HanoiRec(int num, int start, int end, List<(int,int)> acc)
         {
-            if (num <= 0) return new List<(int, int)>();//Continuation0
+            if (num <= 0) return acc;
+            //Continuation0
             var tmp = 6 - start - end;
-            var s = HanoiRec(num - 1, start, tmp);
-            s.Add((start,end));//Continuation1
-            var t = HanoiRec(num - 1, tmp, end);
-            s.AddRange(t);//Continuation2
-            return s;
+            //end 0
+            var s = HanoiRec(num - 1, start, tmp, acc);
+            //Continuation1
+            s.Add((start,end));
+            //end 1
+            var t = HanoiRec(num - 1, tmp, end, acc);
+            //Continuation2
+            //end 2
+            return t;
         }
 
         enum HanoiRecState
@@ -45,19 +76,23 @@ namespace HanoiTower
 
         static List<(int, int)> HanoiIter(int num, int start, int end)
         {
+            var maxDepth = num;
             var result = new List<(int, int)>();
-            if (num <= 0) return result;
-            
-            var stack = new Stack<(int,int,int,HanoiRecState)>();
+            var stack = new Stack<(int,int,int,HanoiRecState)>(maxDepth);
             var tag = HanoiRecState.Continuation0;
-            stack.Push((num, start, end, HanoiRecState.Continuation1));
-            --num;
-            end = 6 - start - end;
             while (stack.Count > 0 || tag != HanoiRecState.Continuation2)
             {
                 if (num <= 0)
                 {
-                    (num, start, end, tag) = stack.Pop();
+                    if (stack.Count > 0)
+                    {
+                        (num, start, end, tag) = stack.Pop();
+                    }
+                    else
+                    {
+                        //stop the loop
+                        tag = HanoiRecState.Continuation2;
+                    }
                 }
                 else switch (tag)
                 {
@@ -66,6 +101,10 @@ namespace HanoiTower
                         --num;
                         end = 6 - start - end;
                         //tag = HanoiRecState.Continuation0;
+                        if (maxDepth < stack.Count)
+                        {
+                            Console.WriteLine($"bug of maxDepth: {stack.Count}");
+                        }
                         break;
                     case HanoiRecState.Continuation1:
                         result.Add((start,end));
@@ -73,6 +112,10 @@ namespace HanoiTower
                         --num;
                         start = 6 - start - end;
                         tag = HanoiRecState.Continuation0;
+                        if (maxDepth < stack.Count)
+                        {
+                            Console.WriteLine($"bug of maxDepth: {stack.Count}");
+                        }
                         break;
                     default:
                         //tag == HanoiRecState.Continuation2
