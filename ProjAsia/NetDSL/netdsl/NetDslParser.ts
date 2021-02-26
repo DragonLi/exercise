@@ -1,35 +1,41 @@
 namespace NetDslParser {
-    const EMPTY_STRING = '';
+    export const EMPTY_STRING = '';
+    export const NODE_NAME = "node";
+    export const EDGE_NAME = "edge";
+    export const GROUP_NAME = "group";
+    export const END_GROUP_NAME = "endgroup";
+    export const COMMENT_PREFIX = "//";
 
-    class StringBuilder {
-        private _parts: string[];
-        private _latest: string | null;
+    export const ERR_SUCCESS = 0;
+    export const ERR_INVALID_LINE_START = 1;
+    export const ERR_ID_CONFLICT = 2;
+    export const ERR_NODE_NOT_FOUND = 3;
+    export const ERR_INSUFFICIENT_PARAM = 4;
+    export const ERR_DUPLICATED_ID = 5;
+    export const ERR_ANOTHER_GROUP = 6;
+    export const WARN_TOKEN_DISCARD = 7;
+    export const WARN_GROUP_DISCARD = 8;
+    export const WARN_EDGE_SAME_SRC_TARGET = 9;
+
+    //TODO change to dynamic expansion list
+    class List<T> {
+        private readonly _array: T[];
 
         constructor() {
-            this._parts = [];
-            this._latest = null;
+            this._array=[];
+        }
+        Add(item:T):void{
+            this._array.push(item);
+        }
+        [Symbol.iterator]():Iterator<T>{
+            return this._array.values();
+        }
+        get Count():number{
+            return this._array.length;
         }
 
-        Append(msg: string): StringBuilder {
-            if (msg.length == 0)
-                return this;
-            this._latest = null;
-            this._parts.push(msg);
-            return this;
-        }
-
-        AppendLine(msg: string): StringBuilder {
-            this._latest = null;
-            this._parts.push(msg);
-            this._parts.push("\n");
-            return this;
-        }
-
-        ToString(): string {
-            let latest = this._latest;
-            if (latest == null)
-                this._latest = latest = this._parts.join(EMPTY_STRING);
-            return latest;
+        ToArray():T[] {
+            return this._array;
         }
     }
 
@@ -78,92 +84,57 @@ namespace NetDslParser {
         }
     }
 
-    //TODO change to dynamic expansion list
-    class List<T> {
-        private readonly _array: T[];
+    class TupleSet<T> {
+        private readonly _set:Map<T,Set<T>>;
 
         constructor() {
-            this._array=[];
-        }
-        Add(item:T):void{
-            this._array.push(item);
-        }
-        [Symbol.iterator]():Iterator<T>{
-            return this._array.values();
-        }
-        get Count():number{
-            return this._array.length;
+            this._set = new Map<T, Set<T>>();
         }
 
-        ToArray():T[] {
-            return this._array;
+        Add(k1:T,k2:T):void{
+            const v = this._set.get(k1)??new Set<T>();
+            if (v.size == 0){
+                this._set.set(k1,v);
+            }
+            v.add(k2);
         }
-    }
-    class HashSet<T> {
-        private readonly _set: Set<T>;
-
-        constructor() {
-            this._set = new Set<T>();
-        }
-
-        Contains(k:T):boolean{
-            return this._set.has(k);
-        }
-
-        Add(k:T):void{
-            this._set.add(k);
+        Contains(k1:T,k2:T):boolean{
+            const v = this._set.get(k1);
+            return v?.has(k2)??false;
         }
     }
 
     class GoJsModel {
-        constructor(nodeArray: string[], linkArray: string[]) {
+        constructor(nodeArray: any[], linkArray: any[]) {
             this.NodeArray = nodeArray;
             this.LinkArray = linkArray;
         }
 
-        readonly NodeArray: string[];
-        readonly LinkArray: string[];
-
-        get GoJsNodeDataArrayStr(): string {
-            const sb = new StringBuilder();
-            sb.AppendLine('[');
-            for (const str of this.NodeArray) {
-                sb.AppendLine(str);
-            }
-            sb.AppendLine(']');
-            return sb.ToString();
-        }
-
-        get GoJsNodeLinkArrayStr(): string {
-            const sb = new StringBuilder();
-            sb.AppendLine('[');
-            for (const str of this.LinkArray) {
-                sb.AppendLine(str);
-            }
-            sb.AppendLine(']');
-            return sb.ToString();
-        }
+        readonly NodeArray: any[];
+        readonly LinkArray: any[];
     }
 
     class Info {
-        constructor(pos: Position, length: number, message: string) {
+        constructor(pos: Position, length: number, message: string,code:number) {
             this.Pos = pos;
             this.Length = length;
             this.Message = message;
+            this.ErrorCode = code;
         }
 
         ToString(): string {
-            return `(${this.Pos.LineIndex + 1},${this.Pos.ColumnIndex + 1}) | Info: ${this.Message}`;
+            return `Info | ${this.ErrorCode} | (${this.Pos.LineIndex + 1},${this.Pos.ColumnIndex + 1}) : ${this.Message}`;
         }
 
         readonly Pos: Position;
         readonly Length: number;
         readonly Message: string;
+        readonly ErrorCode: number;
     }
 
     class NoError extends Info {
         constructor(pos: Position) {
-            super(pos, 0, EMPTY_STRING);
+            super(pos, 0, EMPTY_STRING,ERR_SUCCESS);
         }
 
         ToString(): string {
@@ -172,22 +143,22 @@ namespace NetDslParser {
     }
 
     class Warning extends Info {
-        constructor(pos: Position, length: number, message: string) {
-            super(pos, length, message);
+        constructor(pos: Position, length: number, message: string,code:number) {
+            super(pos, length, message,code);
         }
 
         ToString(): string {
-            return `(${this.Pos.LineIndex + 1},${this.Pos.ColumnIndex + 1}) | Warning: ${this.Message}`;
+            return `Warning | ${this.ErrorCode} | (${this.Pos.LineIndex + 1},${this.Pos.ColumnIndex + 1}) : ${this.Message}`;
         }
     }
 
     class ParsedError extends Info {
-        constructor(pos: Position, length: number, message: string) {
-            super(pos, length, message);
+        constructor(pos: Position, length: number, message: string,code:number) {
+            super(pos, length, message,code);
         }
 
         ToString(): string {
-            return `(${this.Pos.LineIndex + 1},${this.Pos.ColumnIndex + 1}) | Error: ${this.Message}`;
+            return `Error | ${this.ErrorCode} | (${this.Pos.LineIndex + 1},${this.Pos.ColumnIndex + 1}) : ${this.Message}`;
         }
     }
 
@@ -287,10 +258,6 @@ namespace NetDslParser {
             this.Group = null;
         }
 
-        get GoJsStr(): string {
-            return "{key:\"" + this.Id + "\"}";
-        }
-
         ToString(): string {
             return `Node Id: ${this.Id}, Label: ${this.Label}, ${this.Group?.ToString()??''}`;
         }
@@ -315,7 +282,7 @@ namespace NetDslParser {
                         id = tokenStr;
                         if (nodeSet.ContainsKey(tokenStr)) {
                             valid = false;
-                            IssueDuplicated(errLst, token, tokenStr, "node");
+                            IssueDuplicated(errLst, token, tokenStr, NODE_NAME);
                         }
 
                         if (groupSet.ContainsKey(tokenStr)) {
@@ -334,7 +301,7 @@ namespace NetDslParser {
             }
 
             if (count < 1) {
-                IssueInsufficientParameter(line, errLst, "node");
+                IssueInsufficientParameter(line, errLst, NODE_NAME);
             }
             if (valid && count >= 1){
                 return new Node(id,label);
@@ -355,10 +322,6 @@ namespace NetDslParser {
             this.Source = Source;
             this.Target = Target;
             this.Label = Label;
-        }
-
-        get GoJsStr(): string {
-            return "{from: \"" + this.Source.Id + "\", to: \"" + this.Target.Id + "\"}";
         }
 
         ToString(): string {
@@ -389,7 +352,7 @@ namespace NetDslParser {
                         id = tokenStr;
                         if (edgeSet.ContainsKey(tokenStr)) {
                             valid = false;
-                            IssueDuplicated(errLst, token, tokenStr, "edge");
+                            IssueDuplicated(errLst, token, tokenStr, EDGE_NAME);
                         }
                         break;
                     case 2: {
@@ -397,7 +360,7 @@ namespace NetDslParser {
                         if (source == null)
                         {
                             valid = false;
-                            errLst.Add(new ParsedError(token.Pos, token.Length, `source ${tokenStr} don't exist`));
+                            IssueNodeNotFound(errLst, token, tokenStr, "source");
                         }
                     }
                         break;
@@ -405,7 +368,7 @@ namespace NetDslParser {
                         target = nodeSet.TryGetValue(tokenStr);
                         if (target == null){
                             valid = false;
-                            errLst.Add(new ParsedError(token.Pos, token.Length, `target ${tokenStr} don't exist`));
+                            IssueNodeNotFound(errLst, token, tokenStr, "target");
                         }
                     }
                         break;
@@ -420,7 +383,7 @@ namespace NetDslParser {
             }
 
             if (count < 3) {
-                IssueInsufficientParameter(line, errLst, "edge");
+                IssueInsufficientParameter(line, errLst, EDGE_NAME);
             }
             //duplicate check because I need to convince compiler that s/t is non-null
             if (valid && count >= 3 && source != null && target != null){
@@ -440,10 +403,6 @@ namespace NetDslParser {
             this.Id = Id;
             this.Label = Label;
             this.NodeList = NodeList;
-        }
-
-        get GoJsStr(): string {
-            return "{key:\"" + this.Id + "\", isGroup: true}";
         }
 
         ToString(): string {
@@ -472,9 +431,7 @@ namespace NetDslParser {
                         Id = tokenStr;
                         if (groupSet.ContainsKey(tokenStr)) {
                             valid = false;
-                            IssueDuplicated(errLst, token, tokenStr, "group");
-                        }
-                        if (nodeSet.ContainsKey(tokenStr)) {
+                            IssueDuplicated(errLst, token, tokenStr, GROUP_NAME);
                             valid = false;
                             IssueNodeGroupConflict(errLst, token, tokenStr);
                         }
@@ -491,7 +448,7 @@ namespace NetDslParser {
 
             if (!(valid && count >= 1)) {
                 if (count < 1) {
-                    IssueInsufficientParameter(line, errLst, "group");
+                    IssueInsufficientParameter(line, errLst, GROUP_NAME);
                 }
 
                 return null;
@@ -511,7 +468,7 @@ namespace NetDslParser {
                 if (token instanceof EndOfLine)
                     continue;
 
-                if (token.Is("endgroup", netDslStr)) {
+                if (token.Is(END_GROUP_NAME, netDslStr)) {
                     endGroup = true;
                     //skip tokens in the same line
                     while (tokenStream.MoveNext()) {
@@ -528,18 +485,20 @@ namespace NetDslParser {
                 const node = nodeSet.TryGetValue(tokenStr);
                 if (node != null) {
                     if (node.Group != null) {
-                        errLst.Add(new Warning(token.Pos, token.Length,
-                            `node ${tokenStr} already belong to another ${node.Group.Id}`));
+                        errLst.Add(new ParsedError(token.Pos, token.Length,
+                            `node ${tokenStr} already belong to another ${node.Group.Id}`,ERR_ANOTHER_GROUP));
                     } else {
                         node.Group = gr;
                         NodeList.Add(node);
                     }
+                } else {
+                    IssueNodeNotFound(errLst, token, tokenStr, "group node");
                 }
             }
 
             if (NodeList.Count == 0) {
                 errLst.Add(new Warning(line.Pos, line.Length,
-                    `group ${Id} contains no nodes and is removed`));
+                    `group ${Id} contains no nodes and discarded`,WARN_GROUP_DISCARD));
             }
 
             if (!endGroup) {
@@ -566,20 +525,25 @@ namespace NetDslParser {
         readonly GroupList: Group[];
     }
 
+    function IssueNodeNotFound(errLst: List<Info>, token: ParsedToken, tokenStr: string, ty: string)
+    {
+        errLst.Add(new ParsedError(token.Pos, token.Length, `${ty} ${tokenStr} not found`,ERR_NODE_NOT_FOUND));
+    }
+
     function IssueNodeGroupConflict(errLst: List<Info>, token: ParsedToken, tokenStr: string) {
-        errLst.Add(new ParsedError(token.Pos, token.Length, `group id conflicts with node id: ${tokenStr}`));
+        errLst.Add(new ParsedError(token.Pos, token.Length, `group id conflicts with node id: ${tokenStr}`,ERR_ID_CONFLICT));
     }
 
     function IssueDuplicated(errLst: List<Info>, token: ParsedToken, tokenStr: string, ty: string): void {
-        errLst.Add(new ParsedError(token.Pos, token.Length, `duplicated ${ty} ${tokenStr}`));
+        errLst.Add(new ParsedError(token.Pos, token.Length, `duplicated ${ty} ${tokenStr}`,ERR_DUPLICATED_ID));
     }
 
     function IssueInsufficientParameter(line: ParsedLine, errLst: List<Info>, ty: string): void {
-        errLst.Add(new ParsedError(line.Pos, line.Length, `insufficient ${ty} parameter`));
+        errLst.Add(new ParsedError(line.Pos, line.Length, `insufficient ${ty} parameter`,ERR_INSUFFICIENT_PARAM));
     }
 
     function IssueDiscardToken(errLst: List<Info>, token: ParsedToken, tokenStr: string): void {
-        errLst.Add(new Warning(token.Pos, token.Length, `discard token ${tokenStr}`));
+        errLst.Add(new Warning(token.Pos, token.Length, `discard token ${tokenStr}`,WARN_TOKEN_DISCARD));
     }
 
     function IsWhiteSpace(char: string):boolean {
@@ -664,14 +628,14 @@ namespace NetDslParser {
         const nodeSet = new Dictionary<string, Node>();
         const edgeSet = new Dictionary<string, Edge>();
         const groupSet = new Dictionary<string, Group>();
-        const srcTargetSet = new HashSet<[Node, Node]>();
+        const srcTargetSet = new TupleSet<Node>();
         let lastPos = new Position(0, 0);
         const tokenStream = new IEnumerator(ParseNetDslLines(netDslStr));
         while (tokenStream.MoveNext())
         {
             const token = tokenStream.Current;
             const line = token.Line;
-            if (token.Is("node", netDslStr))
+            if (token.Is(NODE_NAME, netDslStr))
             {
                 const node = Node.TryFindArgument(line, tokenStream, netDslStr, nodeSet,groupSet,errLst);
                 if (node != null)
@@ -681,26 +645,24 @@ namespace NetDslParser {
                 continue;
             }
 
-            if (token.Is("edge", netDslStr))
+            if (token.Is(EDGE_NAME, netDslStr))
             {
                 const edge = Edge.TryFindArgument(line, tokenStream, netDslStr, nodeSet, edgeSet, errLst);
                 if (edge != null)
                 {
-                    const pair: [Node, Node] = [edge.Source, edge.Target];
-                    if (srcTargetSet.Contains(pair))
+                    if (srcTargetSet.Contains(edge.Source, edge.Target))
                     {
                         errLst.Add(new Warning(line.Pos, line.Length,
-                            "edge with same source and target already exist {edge.Id}"));
+                            `edge with same source and target already exist ${edge.Id}`,WARN_EDGE_SAME_SRC_TARGET));
                     }
-
-                    srcTargetSet.Add(pair);
+                    srcTargetSet.Add(edge.Source, edge.Target);
                     edgeSet.Add(edge.Id, edge);
                 }
 
                 continue;
             }
 
-            if (token.Is("group", netDslStr))
+            if (token.Is(GROUP_NAME, netDslStr))
             {
                 const gr = Group.TryFindArgument(line, tokenStream, netDslStr, nodeSet, groupSet, errLst);
                 if (gr != null)
@@ -711,7 +673,7 @@ namespace NetDslParser {
                 continue;
             }
 
-            if (token.StartWith("//", netDslStr)){
+            if (token.StartWith(COMMENT_PREFIX, netDslStr)){
                 SkipLine(tokenStream)
                 continue;
             }
@@ -724,7 +686,7 @@ namespace NetDslParser {
             }
 
             errLst.Add(new ParsedError(line.Pos, line.Length,
-                "expect node/edge/group..endgroup"));
+                "expect node/edge/group..endgroup",ERR_INVALID_LINE_START));
         }
 
         const net = new Net(nodeSet.ValuesToArray(), edgeSet.ValuesToArray(), groupSet.ValuesToArray());
@@ -736,21 +698,21 @@ namespace NetDslParser {
     }
 
     export function GenerateGoJsModel(net: Net): GoJsModel {
-        const nodes = new Array<string>(net.NodeList.length + net.GroupList.length);
+        const nodes = new Array(net.NodeList.length + net.GroupList.length);
         const edgeNum = net.EdgeList.length;
-        const edges = new Array<string>(edgeNum);
+        const edges = new Array(edgeNum);
         let index = 0;
         for (const node of net.NodeList) {
-            nodes[index]=node.GoJsStr;
+            nodes[index]={key: node.Id};
             index++;
         }
         for (const gr of net.GroupList) {
-            nodes[index]=gr.GoJsStr;
+            nodes[index]={key: gr.Id, isGroup: true};
             index++;
         }
         index=0;
         for (const edge of net.EdgeList) {
-            edges[index]=edge.GoJsStr;
+            edges[index]={from:edge.Source.Id,to:edge.Target.Id};
             index++;
         }
         return new GoJsModel(nodes, edges);
@@ -783,11 +745,11 @@ function Main(netDslStr: string) {
         {
             console.log(node.Id);
         }
-        console.log("endgroup");
+        console.log(NetDslParser.END_GROUP_NAME);
     }
     console.log();
-    console.log(model.GoJsNodeDataArrayStr);
-    console.log(model.GoJsNodeLinkArrayStr);
+    console.log(model.NodeArray);
+    console.log(model.LinkArray);
 }
 
 const netDslStr = `node node1 label1 nodeIgnores
@@ -799,7 +761,7 @@ edge edge3 node1 node3 edgeLabel3
 group group1 label4 groupIgnores
 node1 node2
 node3 node4
-endgroup endGroupIgnores
+endGroup endGroupIgnores
 
 //invalid lines followed
 node
@@ -812,15 +774,15 @@ edge edge4 node node
 group
 group node1
 node1
-endgroup
+endGroup
 group group1
 node1
-endgroup
+endGroup
 group group2
 node1
-endgroup
+endGroup
 group group3
-endgroup
+endGroup
 group group4
 node3
 `
