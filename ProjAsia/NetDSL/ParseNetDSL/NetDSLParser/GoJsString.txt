@@ -1,0 +1,12 @@
+[
+{key:"node1"}
+{key:"node2"}
+{key:"node3"}
+{key:"group1", isGroup: true}
+]
+
+[
+{from: "node1", to: "node2"}
+{from: "node1", to: "node3"}
+{from: "node1", to: "node3"}
+]

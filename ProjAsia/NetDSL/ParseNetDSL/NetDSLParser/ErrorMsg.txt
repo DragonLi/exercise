@@ -1,0 +1,30 @@
+(1,19) | Warning: discard token nodeIgnores
+(4,31) | Warning: discard token edgeIgnores
+(6,1) | Warning: edge with same source and target already exist edge3
+(7,21) | Warning: discard token groupIgnores
+(9,7) | Error: group node node4 don't exist
+(10,10) | Warning: discard token endGroupIgnores
+(12,1) | Error: expect node/edge/group..endgroup
+(12,1) | Error: expect node/edge/group..endgroup
+(12,1) | Error: expect node/edge/group..endgroup
+(13,1) | Error: insufficient node parameter
+(14,6) | Error: duplicated node node1
+(15,6) | Error: group id conflicts with node id: group1
+(16,1) | Error: insufficient edge parameter
+(17,6) | Error: duplicated edge edge1
+(17,1) | Error: insufficient edge parameter
+(18,1) | Error: insufficient edge parameter
+(19,12) | Error: source node don't exist
+(19,17) | Error: target node don't exist
+(20,1) | Error: insufficient group parameter
+(21,7) | Error: group id conflicts with node id: node1
+(22,1) | Error: expect node/edge/group..endgroup
+(23,1) | Error: expect node/edge/group..endgroup
+(24,7) | Error: duplicated group group1
+(25,1) | Error: expect node/edge/group..endgroup
+(26,1) | Error: expect node/edge/group..endgroup
+(28,1) | Warning: node node1 already belong to another group1
+(27,1) | Warning: group group2 contains no nodes and is removed
+(30,1) | Warning: group group3 contains no nodes and is removed
+(33,1) | Warning: node node3 already belong to another group1
+(32,1) | Warning: group group4 contains no nodes and is removed

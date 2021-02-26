@@ -1,0 +1,33 @@
+node node1 label1 nodeIgnores
+node node2
+node node3 label3
+edge edge1 node1 node2 label2 edgeIgnores
+edge edge2 node1 node3
+edge edge3 node1 node3 edgeLabel3
+group group1 label4 groupIgnores
+node1 node2
+node3 node4
+endgroup endGroupIgnores
+
+invalid lines followed
+node
+node node1
+node group1
+edge
+edge edge1
+edge edge4 node1
+edge edge4 node node
+group
+group node1
+node1
+endgroup
+group group1
+node1
+endgroup
+group group2
+node1
+endgroup
+group group3
+endgroup
+group group4
+node3
