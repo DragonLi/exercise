@@ -57,15 +57,16 @@ var NetDslParser;
             return (_a = this._map.get(key)) !== null && _a !== void 0 ? _a : null;
         }
         ValuesToArray() {
-            let r = new Array(this._map.size);
+            const r = new Array(this._map.size);
             let index = 0;
-            for (let value of this._map.values()) {
+            for (const value of this._map.values()) {
                 r[index] = value;
                 index++;
             }
             return r;
         }
     }
+    //TODO change to dynamic expansion list
     class List {
         constructor() {
             this._array = [];
@@ -75,11 +76,6 @@ var NetDslParser;
         }
         [Symbol.iterator]() {
             return this._array.values();
-        }
-        ForEach(cb) {
-            for (let o of this._array) {
-                cb(o);
-            }
         }
         get Count() {
             return this._array.length;
@@ -105,18 +101,18 @@ var NetDslParser;
             this.LinkArray = linkArray;
         }
         get GoJsNodeDataArrayStr() {
-            let sb = new StringBuilder();
+            const sb = new StringBuilder();
             sb.AppendLine('[');
-            for (let str of this.NodeArray) {
+            for (const str of this.NodeArray) {
                 sb.AppendLine(str);
             }
             sb.AppendLine(']');
             return sb.ToString();
         }
         get GoJsNodeLinkArrayStr() {
-            let sb = new StringBuilder();
+            const sb = new StringBuilder();
             sb.AppendLine('[');
-            for (let str of this.LinkArray) {
+            for (const str of this.LinkArray) {
                 sb.AppendLine(str);
             }
             sb.AppendLine(']');
@@ -186,12 +182,12 @@ var NetDslParser;
             return this.EndExclusive - this.Start;
         }
         Is(name, netDslStr) {
-            let len = name.length;
+            const len = name.length;
             if (this.EndExclusive - this.Start != len) {
                 return false;
             }
             for (let index = 0; index < len; index++) {
-                let ch = name.charAt(index);
+                const ch = name.charAt(index);
                 if (ch != netDslStr.charAt(index + this.Start).toLowerCase()) {
                     return false;
                 }
@@ -199,12 +195,12 @@ var NetDslParser;
             return true;
         }
         StartWith(prefix, netDslStr) {
-            let len = prefix.length;
+            const len = prefix.length;
             if (this.EndExclusive - this.Start < len) {
                 return false;
             }
             for (let index = 0; index < len; index++) {
-                let ch = prefix.charAt(index);
+                const ch = prefix.charAt(index);
                 if (ch != netDslStr.charAt(index + this.Start).toLowerCase()) {
                     return false;
                 }
@@ -366,12 +362,12 @@ var NetDslParser;
             let count = 0;
             let valid = true;
             while (tokenStream.MoveNext()) {
-                let token = tokenStream.Current;
+                const token = tokenStream.Current;
                 if (token instanceof EndOfLine || token instanceof EndOfFile) {
                     break;
                 }
                 count++;
-                let tokenStr = token.GetString(netDslStr);
+                const tokenStr = token.GetString(netDslStr);
                 switch (count) {
                     case 1:
                         Id = tokenStr;
@@ -426,7 +422,7 @@ var NetDslParser;
                 const node = nodeSet.TryGetValue(tokenStr);
                 if (node != null) {
                     if (node.Group != null) {
-                        errLst.Add(new Warning(token.Pos, token.Length, "node {tokenStr} already belong to another {node.Group.Id}"));
+                        errLst.Add(new Warning(token.Pos, token.Length, `node ${tokenStr} already belong to another ${node.Group.Id}`));
                     }
                     else {
                         node.Group = gr;
@@ -435,7 +431,7 @@ var NetDslParser;
                 }
             }
             if (NodeList.Count == 0) {
-                errLst.Add(new Warning(line.Pos, line.Length, "group {Id} contains no nodes and is removed"));
+                errLst.Add(new Warning(line.Pos, line.Length, `group ${Id} contains no nodes and is removed`));
             }
             if (!endGroup) {
                 for (const node of NodeList) {
@@ -538,7 +534,7 @@ var NetDslParser;
             const token = tokenStream.Current;
             const line = token.Line;
             if (token.Is("node", netDslStr)) {
-                let node = Node.TryFindArgument(line, tokenStream, netDslStr, nodeSet, groupSet, errLst);
+                const node = Node.TryFindArgument(line, tokenStream, netDslStr, nodeSet, groupSet, errLst);
                 if (node != null) {
                     nodeSet.Add(node.Id, node);
                 }
@@ -605,8 +601,8 @@ var NetDslParser;
 })(NetDslParser || (NetDslParser = {}));
 //TODO test codes only, shall not include
 function Main(netDslStr) {
-    let [net, errLst] = NetDslParser.Parse(netDslStr);
-    let model = NetDslParser.GenerateGoJsModel(net);
+    const [net, errLst] = NetDslParser.Parse(netDslStr);
+    const model = NetDslParser.GenerateGoJsModel(net);
     for (const errInfo of errLst) {
         console.log(errInfo.ToString());
     }
@@ -628,7 +624,7 @@ function Main(netDslStr) {
     console.log(model.GoJsNodeDataArrayStr);
     console.log(model.GoJsNodeLinkArrayStr);
 }
-let netDslStr = `node node1 label1 nodeIgnores
+const netDslStr = `node node1 label1 nodeIgnores
 node node2
 node node3 label3
 edge edge1 node1 node2 label2 edgeIgnores
