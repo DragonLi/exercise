@@ -16,6 +16,7 @@ namespace NetDslParser {
     export const WARN_TOKEN_DISCARD = 7;
     export const WARN_GROUP_DISCARD = 8;
     export const WARN_EDGE_SAME_SRC_TARGET = 9;
+    export const WARN_DUPLICATE_ASSIGN_GROUP = 10;
 
     //TODO change to dynamic expansion list
     class List<T> {
@@ -451,10 +452,11 @@ namespace NetDslParser {
                     IssueInsufficientParameter(line, errLst, GROUP_NAME);
                 }
 
+                //TODO error recover from here: try find end group but this may lead to infinite look ahead!
                 return null;
             }
 
-            //assume following tokens are node ids until "endgroup" is meet
+            //assume following tokens are node ids until "endGroup" is meet
             let endGroup = false;
             const NodeList = new List<Node>();
             const gr = new Group(Id, Label, NodeList);
@@ -485,8 +487,13 @@ namespace NetDslParser {
                 const node = nodeSet.TryGetValue(tokenStr);
                 if (node != null) {
                     if (node.Group != null) {
-                        errLst.Add(new ParsedError(token.Pos, token.Length,
-                            `node ${tokenStr} already belong to another ${node.Group.Id}`,ERR_ANOTHER_GROUP));
+                        if (node.Group != gr){
+                            errLst.Add(new ParsedError(token.Pos, token.Length,
+                                `node ${tokenStr} already belong to another ${node.Group.Id}`,ERR_ANOTHER_GROUP));
+                        }else{
+                            errLst.Add(new Warning(token.Pos, token.Length,
+                                `node ${tokenStr} already assign to ${node.Group.Id}`,WARN_DUPLICATE_ASSIGN_GROUP));
+                        }
                     } else {
                         node.Group = gr;
                         NodeList.Add(node);
@@ -674,7 +681,7 @@ namespace NetDslParser {
             }
 
             if (token.StartWith(COMMENT_PREFIX, netDslStr)){
-                SkipLine(tokenStream)
+                SkipLine(tokenStream);
                 continue;
             }
 
@@ -685,8 +692,10 @@ namespace NetDslParser {
                 continue;
             }
 
+            SkipLine(tokenStream);
             errLst.Add(new ParsedError(line.Pos, line.Length,
-                "expect node/edge/group..endgroup",ERR_INVALID_LINE_START));
+                `unexpected ${token.GetString(netDslStr)}, expect node/edge/group..endGroup, discard whole line`
+                ,ERR_INVALID_LINE_START));
         }
 
         const net = new Net(nodeSet.ValuesToArray(), edgeSet.ValuesToArray(), groupSet.ValuesToArray());
@@ -760,7 +769,7 @@ edge edge2 node1 node3
 edge edge3 node1 node3 edgeLabel3
 group group1 label4 groupIgnores
 node1 node2
-node3 node4
+node3 node4 node1
 endGroup endGroupIgnores
 
 //invalid lines followed
