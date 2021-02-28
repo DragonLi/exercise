@@ -6,10 +6,11 @@ edge edge2 node1 node3
 edge edge3 node1 node3 edgeLabel3
 group group1 label4 groupIgnores
 node1 node2
-node3 node4
-endgroup endGroupIgnores
+node3 node4 node1
+endGroup endGroupIgnores
 
-invalid lines followed
+//invalid lines followed
+unexpected tokens discard whole line
 node
 node node1
 node group1
@@ -20,14 +21,14 @@ edge edge4 node node
 group
 group node1
 node1
-endgroup
+endGroup
 group group1
 node1
-endgroup
+endGroup
 group group2
 node1
-endgroup
+endGroup
 group group3
-endgroup
+endGroup
 group group4
 node3

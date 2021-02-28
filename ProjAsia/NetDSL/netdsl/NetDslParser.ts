@@ -105,14 +105,17 @@ namespace NetDslParser {
         }
     }
 
+    type GoJsNode = {key:string,isGroup?:boolean};
+    type GoJsLink = {from:string,to:string};
+
     class GoJsModel {
-        constructor(nodeArray: any[], linkArray: any[]) {
+        constructor(nodeArray: GoJsNode[], linkArray: GoJsLink[]) {
             this.NodeArray = nodeArray;
             this.LinkArray = linkArray;
         }
 
-        readonly NodeArray: any[];
-        readonly LinkArray: any[];
+        readonly NodeArray: GoJsNode[];
+        readonly LinkArray: GoJsLink[];
     }
 
     class Info {
@@ -707,9 +710,9 @@ namespace NetDslParser {
     }
 
     export function GenerateGoJsModel(net: Net): GoJsModel {
-        const nodes = new Array(net.NodeList.length + net.GroupList.length);
+        const nodes = new Array<GoJsNode>(net.NodeList.length + net.GroupList.length);
         const edgeNum = net.EdgeList.length;
-        const edges = new Array(edgeNum);
+        const edges = new Array<GoJsLink>(edgeNum);
         let index = 0;
         for (const node of net.NodeList) {
             nodes[index]={key: node.Id};
@@ -771,8 +774,11 @@ group group1 label4 groupIgnores
 node1 node2
 node3 node4 node1
 endGroup endGroupIgnores
+node 摄像机1 10.13.16.19
 
 //invalid lines followed
+unexpected tokens discard whole line
+测试中文
 node
 node node1
 node group1

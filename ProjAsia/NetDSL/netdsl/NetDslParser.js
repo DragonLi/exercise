@@ -616,8 +616,11 @@ group group1 label4 groupIgnores
 node1 node2
 node3 node4 node1
 endGroup endGroupIgnores
+node 摄像机1 10.13.16.19
 
 //invalid lines followed
+unexpected tokens discard whole line
+测试中文
 node
 node node1
 node group1
