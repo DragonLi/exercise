@@ -1,0 +1,94 @@
+文件内容:
+node node1 label1 nodeIgnores
+node node2
+node node3 label3
+edge edge1 node1 node2 label2 edgeIgnores
+edge edge2 node1 node3
+edge edge3 node1 node3 edgeLabel3
+group group1 label4 groupIgnores
+node1 node2
+node3 node4 node1
+endGroup endGroupIgnores
+node 摄像机1 10.13.16.19
+
+//invalid lines followed
+unexpected tokens discard whole line
+测试中文
+node
+node node1
+node group1
+edge
+edge edge1
+edge edge4 node1
+edge edge4 node node
+group
+group node1
+node1
+endGroup
+group group1
+node1
+endGroup
+group group2
+node1
+endGroup
+group group3
+endGroup
+group group4
+node3
+
+
+编译错误:
+Warning | 7 | (1,19) : discard token nodeIgnores
+Warning | 7 | (4,31) : discard token edgeIgnores
+Warning | 9 | (6,1) : edge with same source and target already exist edge3
+Warning | 7 | (7,21) : discard token groupIgnores
+Error | 3 | (9,7) : group node node4 not found
+Warning | 10 | (9,13) : node node1 already assign to group1
+Warning | 7 | (10,10) : discard token endGroupIgnores
+Error | 1 | (14,1) : unexpected unexpected, expect node/edge/group..endGroup, discard whole line
+Error | 1 | (15,1) : unexpected 测试中文, expect node/edge/group..endGroup, discard whole line
+Error | 4 | (16,1) : insufficient node parameter
+Error | 5 | (17,6) : duplicated node node1
+Error | 2 | (18,6) : group id conflicts with node id: group1
+Error | 4 | (19,1) : insufficient edge parameter
+Error | 5 | (20,6) : duplicated edge edge1
+Error | 4 | (20,1) : insufficient edge parameter
+Error | 4 | (21,1) : insufficient edge parameter
+Error | 3 | (22,12) : source node not found
+Error | 3 | (22,17) : target node not found
+Error | 4 | (23,1) : insufficient group parameter
+Error | 6 | (25,1) : node node1 already belong to another group1
+Warning | 8 | (24,1) : group node1 contains no nodes and discarded
+Error | 5 | (27,7) : duplicated group group1
+Error | 2 | (27,7) : group id conflicts with node id: group1
+Error | 1 | (28,1) : unexpected node1, expect node/edge/group..endGroup, discard whole line
+Error | 1 | (29,1) : unexpected endGroup, expect node/edge/group..endGroup, discard whole line
+Error | 6 | (31,1) : node node1 already belong to another group1
+Warning | 8 | (30,1) : group group2 contains no nodes and discarded
+Warning | 8 | (33,1) : group group3 contains no nodes and discarded
+Error | 6 | (36,1) : node node3 already belong to another group1
+Warning | 8 | (35,1) : group group4 contains no nodes and discarded
+
+拓扑图定义:
+Node Id: node1, Label: label1, Group Id: group1, Label: label4
+Node Id: node2, Label: , Group Id: group1, Label: label4
+Node Id: node3, Label: label3, Group Id: group1, Label: label4
+Node Id: 摄像机1, Label: 10.13.16.19,
+Edge Id: edge1, Source: node1, Target: node2, Label: label2
+Edge Id: edge2, Source: node1, Target: node3, Label:
+Edge Id: edge3, Source: node1, Target: node3, Label: edgeLabel3
+Group Id: group1, Label: label4
+node1
+node2
+node3
+endgroup
+
+GoJS模型数据:
+[ { key: 'node1', group: 'group1' },
+  { key: 'node2', group: 'group1' },
+  { key: 'node3', group: 'group1' },
+  { key: '摄像机1' },
+  { key: 'group1', isGroup: true } ]
+[ { from: 'node1', to: 'node2' },
+  { from: 'node1', to: 'node3' },
+  { from: 'node1', to: 'node3' } ]

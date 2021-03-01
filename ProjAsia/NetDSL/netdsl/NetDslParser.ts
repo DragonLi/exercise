@@ -1,4 +1,4 @@
-namespace NetDslParser {
+export namespace NetDslParser {
     export const EMPTY_STRING = '';
     export const NODE_NAME = "node";
     export const EDGE_NAME = "edge";
@@ -105,7 +105,7 @@ namespace NetDslParser {
         }
     }
 
-    type GoJsNode = {key:string,isGroup?:boolean};
+    type GoJsNode = {key:string,isGroup?:boolean,group?:string};
     type GoJsLink = {from:string,to:string};
 
     class GoJsModel {
@@ -614,7 +614,7 @@ namespace NetDslParser {
         line.Length = index - line.Start;
         if (index > start)
         {
-            yield new ParsedToken(line,index,start);
+            yield new ParsedToken(line,start,index);
             start = index;
         }
         //generate end of file
@@ -715,7 +715,7 @@ namespace NetDslParser {
         const edges = new Array<GoJsLink>(edgeNum);
         let index = 0;
         for (const node of net.NodeList) {
-            nodes[index]={key: node.Id};
+            nodes[index]=node.Group != null?{key: node.Id,group:node.Group.Id} : {key: node.Id};
             index++;
         }
         for (const gr of net.GroupList) {
@@ -730,75 +730,3 @@ namespace NetDslParser {
         return new GoJsModel(nodes, edges);
     }
 }
-
-//TODO test codes only, shall not include
-function Main(netDslStr: string) {
-    const [net,errLst] = NetDslParser.Parse(netDslStr);
-    const model = NetDslParser.GenerateGoJsModel(net);
-
-    for (const errInfo of errLst)
-    {
-        console.log(errInfo.ToString());
-    }
-
-    console.log();
-    for (const node of net.NodeList)
-    {
-        console.log(node.ToString());
-    }
-    for (const edge of net.EdgeList)
-    {
-        console.log(edge.ToString());
-    }
-    for (const sub of net.GroupList)
-    {
-        console.log(sub.ToString());
-        for (const node of sub.NodeList)
-        {
-            console.log(node.Id);
-        }
-        console.log(NetDslParser.END_GROUP_NAME);
-    }
-    console.log();
-    console.log(model.NodeArray);
-    console.log(model.LinkArray);
-}
-
-const netDslStr = `node node1 label1 nodeIgnores
-node node2
-node node3 label3
-edge edge1 node1 node2 label2 edgeIgnores
-edge edge2 node1 node3
-edge edge3 node1 node3 edgeLabel3
-group group1 label4 groupIgnores
-node1 node2
-node3 node4 node1
-endGroup endGroupIgnores
-node 摄像机1 10.13.16.19
-
-//invalid lines followed
-unexpected tokens discard whole line
-测试中文
-node
-node node1
-node group1
-edge
-edge edge1
-edge edge4 node1
-edge edge4 node node
-group
-group node1
-node1
-endGroup
-group group1
-node1
-endGroup
-group group2
-node1
-endGroup
-group group3
-endGroup
-group group4
-node3
-`
-Main(netDslStr);

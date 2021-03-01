@@ -1,0 +1,29 @@
+文件内容:
+//下面定义节点
+node 节点1-ID 节点1-描述
+node 节点2-ID 节点2-描述
+//下面定义一条边
+edge 边1-ID  节点1-ID 节点2-ID 边1-描述
+//下面定义一个分组
+group 分组1-ID 分组1-描述
+节点1-ID 节点2-ID
+endgroup
+
+编译错误:
+Success
+
+拓扑图定义:
+Node Id: 节点1-ID, Label: 节点1-描述, Group Id: 分组1-ID, Label: 分组1-描述
+Node Id: 节点2-ID, Label: 节点2-描述, Group Id: 分组1-ID, Label: 分组1-描述
+Edge Id: 边1-ID, Source: 节点1-ID, Target: 节点2-ID, Label: 边1-描述
+Group Id: 分组1-ID, Label: 分组1-描述
+节点1-ID
+节点2-ID
+endgroup
+
+GoJS模型数据:
+[ { key: '节点1-ID', group: '分组1-ID' },
+  { key: '节点2-ID', group: '分组1-ID' },
+  { key: '分组1-ID', isGroup: true } ]
+[ { from: '节点1-ID', to: '节点2-ID' } ]
+
