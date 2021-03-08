@@ -567,11 +567,13 @@ var NetDslParser;
         const edges = new Array(edgeNum);
         let index = 0;
         for (const node of net.NodeList) {
-            nodes[index] = node.Group != null ? { key: node.Id, group: node.Group.Id } : { key: node.Id };
+            //warning node.Label maybe empty
+            nodes[index] = node.Group != null ? { key: node.Id, group: node.Group.Id, text: node.Label } : { key: node.Id, text: node.Label };
             index++;
         }
         for (const gr of net.GroupList) {
-            nodes[index] = { key: gr.Id, isGroup: true };
+            //warning gr.Label maybe empty
+            nodes[index] = { key: gr.Id, text: gr.Label, isGroup: true };
             index++;
         }
         index = 0;
